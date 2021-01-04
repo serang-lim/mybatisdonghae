@@ -9,6 +9,7 @@
 	<typeAliases>
 		<typeAlias alias="TpromotionDTO" type="kr.co.mybatisdonghae.Tpromotion.TpromotionDTO" />
 		<typeAlias alias="TreviewDTO" type="kr.co.mybatisdonghae.Treview.TreviewDTO" />
+		<typeAlias alias="TreviewFileDTO" type="kr.co.mybatisdonghae.Treview.TreviewFileDTO" />
 	</typeAliases>
 	
 </configuration>

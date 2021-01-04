@@ -2,6 +2,8 @@ package kr.co.mybatisdonghae.Treview;
 
 import java.util.Date;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class TreviewDTO {
 	private int Rnum;
 	private String Rsubject;
@@ -13,6 +15,12 @@ public class TreviewDTO {
 	private String Rid;
 	private Date Rdate;
 	private int Rreadcnt;
+
+	//-------------------------------------
+	
+	private MultipartFile photonameMF;
+	
+	//-------------------------------------
 	
 	public TreviewDTO() {}
 	
@@ -76,12 +84,22 @@ public class TreviewDTO {
 	public void setRreadcnt(int rreadcnt) {
 		Rreadcnt = rreadcnt;
 	}
-	
+
+	public MultipartFile getPhotonameMF() {
+		return photonameMF;
+	}
+
+	public void setPhotonameMF(MultipartFile photonameMF) {
+		this.photonameMF = photonameMF;
+	}
+
 	@Override
 	public String toString() {
 		return "TreviewDTO [Rnum=" + Rnum + ", Rsubject=" + Rsubject + ", Rcontent=" + Rcontent + ", Rpasswd=" + Rpasswd
 				+ ", Rphoto_name=" + Rphoto_name + ", Rphoto_size=" + Rphoto_size + ", Rregion=" + Rregion + ", Rid="
-				+ Rid + ", Rdate=" + Rdate + ", Rreadcnt=" + Rreadcnt + "]";
+				+ Rid + ", Rdate=" + Rdate + ", Rreadcnt=" + Rreadcnt + ", photonameMF=" + photonameMF + "]";
 	}
 	
-}
+	
+	
+}//class end

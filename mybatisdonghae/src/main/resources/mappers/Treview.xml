@@ -13,9 +13,17 @@
 	      ]]>
 	</select>
 	
+	<!-- 게시글 번호 증가 -->
+    <select id="maxCode" resultType="string">
+    <![CDATA[
+        select IFNULL(MAX(rnum)+1, 1)
+        from review
+      ]]>
+    </select>
+	
 	<select id="read" resultType="TreviewDTO">
 		<![CDATA[
-	      SELECT rnum, rsubject, rcontent, rregion, rid, rdate, rreadcnt, rphoto_name
+	      SELECT *, IF(DATE_SUB(NOW(), INTERVAL 7 DAY) <= rdate, 1, 0) AS icon
 	      FROM review
 	      WHERE rnum=#{rnum}
 	      ]]>
@@ -23,19 +31,19 @@
 	
 	<insert id="insert">
 		<![CDATA[
-	      INSERT INTO review (rnum, rsubject, rcontent, rpasswd, rphoto_name, rregion, rid, rdate)
-	      VALUES (rnum_seq.nextval, #{rsubject}, #{rcontent}, #{rpasswd}, #{rphoto_name}, #{rregion}, #{rid}, sysdate)
+	      INSERT INTO review (rnum, rsubject, rcontent, rpasswd, rregion, rid, rdate)
+	      VALUES (rnum_seq.nextval, #{rsubject}, #{rcontent}, #{rpasswd}, #{rregion}, #{rid}, sysdate)
 	      ]]>
 	</insert>
 	
 	<update id="update">
 		<![CDATA[
-         UPDATE review SET rsubject=#{rsubject}, scontent=#{scontent}, sphoto_name=#{sphoto_name}, sregion=#{sregion}, spasswd=#{spasswd}
+         UPDATE review SET rsubject=#{rsubject}, scontent=#{scontent}, sregion=#{sregion}, spasswd=#{spasswd}
          WHERE rnum=#{rnum}
          ]]>
 	</update>
 	
-	   <delete id="delete">
+	 <delete id="delete">
       <![CDATA[
          DELETE FROM review
          WHERE rnum=#{rnum}
@@ -51,5 +59,69 @@
             rnum = #{rnum}
       ]]>      
     </update>   
+    
+    <!-- 파일 업로드 -->
+    <insert id="insertfile" parameterType="TreviewFileDTO">
+    <![CDATA[
+    insert into treviewfile(rnum, FileName, RealName, Size)
+    values ( #{noticePK}, #{fileName}, #{realName}, #{size} )
+    ]]>
+    </insert>
+    
+    <!-- 파일 리스트 -->
+    <select id="filelist" resultType="TreviewFileDTO">
+	      <![CDATA[
+	    select * from treviewfile
+	    where rnum = #{rnum}
+	    order by FileNum asc
+	    ]]>
+    </select>
+     
+    <!-- 파일 삭제 -->
+    <delete id="deletefile" parameterType="hashmap">  
+	      <![CDATA[
+	    delete
+	    from treviewfile
+	    where FileNum in (
+	        <foreach item="item" index="index" collection="fileNum" separator=",">
+	            ${item}
+	        </foreach>
+	        )
+	      ]]>  
+    </delete>
+    
+    <!-- 페이징 + 검색처리된 게시물 조회(게시판 전체) -->
+    <sql id="testing">
+    <if test="searchType != null">
+        <if test="searchType == 't'.toString()">
+        where Title like CONCAT("%", #{keyword} ,"%") 
+        </if>
+        <if test="searchType == 'w'.toString()">
+        where Writer like CONCAT("%", #{keyword} ,"%")
+        </if>
+    </if>   
+    </sql>
+     
+    <select id="listtreview" resultType="TreviewDTO" parameterType="searchCriteria">
+	      <![CDATA[
+	    SELECT
+	    nb.*, 
+	    nbf.FileNum,
+	    IF(DATE_SUB(NOW(), INTERVAL 7 DAY) <= nb.rdate, 1, 0) AS icon
+	    FROM review nb
+	    LEFT JOIN treviewfile nbf ON (nb.rnum = nbf.rnum) 
+	         
+	    order by nb.rnum DESC
+	    limit #{pageStart}, #{perPageNum}
+	    	]]>
+    </select>
+ 
+    <!-- 검색 결과 게시물 총 갯수 계산 -->
+    <select id="reviewcount" resultType="java.lang.Integer" parameterType="searchCriteria">
+	      <![CDATA[
+	    SELECT COUNT(*) FROM review nb
+	    LEFT JOIN treviewfile nbf ON (nb.rnum = nbf.rnum)
+	     ]]>
+    </select>
     
 </mapper>

@@ -22,8 +22,8 @@
 	   <td><input type="text" name="rid"></td>
 	</tr>
 	<tr>
-	   <th>첨부파일</th>
-	   <td><input type="file" name="photonameMF" multiple="multiple" size='50'></td>
+	   <th><label for="c_attachFile1">첨부파일</label></th>
+	   <td><input type="file" name="uploadfile" multiple="multiple" size='50'></td>
 	</tr>
 	<tr>
 	   <th>지역</th>
@@ -42,13 +42,11 @@
 	   <td><input type="text" name="rcontent" rows="5" cols="30"></td>
 	</tr>
 	
-	
 	<td colspan='2'>
       <input type="submit"  value="등록">
       <input type="button" value="목록" onclick="location.href='Treview.do'">
       <input type="button" value="HOME" onclick="location.href=${root}/home.do'">
 	</table>
 </form>
-	
 <!-- 본 문 끝 !! -->
 <%@ include file="../footer.jsp"%>

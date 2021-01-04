@@ -13,9 +13,9 @@ public interface ITreviewDAO {
     public void increaseCnt(int rnum) throws Exception;
     */
 	
-	//public void createReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum);
+	public void createReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum);
 	public TreviewDTO readReview(int rnum);
-	//public void updateReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum);
+	public void updateReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum);
 	public void deleteReview(int rnum);
 	public void increaseCnt(int rnum);
 	public List<TreviewDTO> Reviewlist(SearchCriteria cri);

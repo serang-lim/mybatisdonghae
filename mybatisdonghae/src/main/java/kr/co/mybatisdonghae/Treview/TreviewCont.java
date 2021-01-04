@@ -124,12 +124,12 @@ public class TreviewCont {
   //-------------------------------------------------------------
     
 	// 등록 페이지
-    @RequestMapping(value="/Treview/createrform.do")
+    @RequestMapping("/Treview/createrform.do")
     public String createrform(Model model) throws Exception{
         model.addAttribute("maxCode", dao.getMaxCode()); 
         return "Treview/Treviewcreate";
     }//noticeWrite() end
-    /*
+    
     // 등록
     @RequestMapping("/Treview/create.do")
     public String insert(int rnum, TreviewDTO treviewDTO, HttpServletRequest request){      
@@ -140,7 +140,7 @@ public class TreviewCont {
         dao.createReview(treviewDTO, filelist, fileNum);        
         return "redirect:/Treview/Treview.do";
     }//insert() end
-    */
+    
   //-------------------------------------------------------------
     
     // 수정 페이지
@@ -151,7 +151,7 @@ public class TreviewCont {
         model.addAttribute("fileview", fileview);
         return "Treview/Treviewupd";
     }
-/*
+
     // 수정
     @RequestMapping(value="/noticeUpdate.do", method=RequestMethod.POST)
     public String update(int rnum, TreviewDTO treviewDTO, SearchCriteria cri, RedirectAttributes rttr, HttpServletRequest request){
@@ -172,7 +172,7 @@ public class TreviewCont {
          
         return "redirect:/Treview/read.do?rnum=" + rnum;
     }// updatePOST()
-    */
+    
   //-------------------------------------------------------------
   
     // 삭제

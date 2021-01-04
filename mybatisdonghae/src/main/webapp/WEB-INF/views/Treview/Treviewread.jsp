@@ -14,8 +14,7 @@
 	<form role="form" method="get">
    	<input type="hidden" name="writer" value="${dto.rid}">
    	<input type="hidden" name="num" value="${dto.rnum}">
-   	<input type="hidden" name="size" value="${dto.rphoto_size}">
-	</form>
+   	</form>
    <tr>  
       <th>제목</th>
       <td>${dto.rsubject}</td>

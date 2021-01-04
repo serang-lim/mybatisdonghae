@@ -6,7 +6,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.transaction.TransactionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Repository;
@@ -58,7 +57,7 @@ public class TreviewDAO implements ITreviewDAO {
 		sqlSession.update("treveiw.increaseCnt", rnum);
 	};
 	*/
-	/*
+	
 	// 등록
     @Override
     public void createReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum) {
@@ -84,13 +83,13 @@ public class TreviewDAO implements ITreviewDAO {
             System.out.println("데이터 저장 오류: " + ex.toString());
         }           
     }   
-    */
+    
     // 상세보기
     @Override
     public TreviewDTO readReview(int rnum) {
         return sqlSession.selectOne("treview.read", rnum);
     }
-    /*
+    
     // 업데이트 (+ 파일업데이트)
     @Override
     public void updateReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum) {
@@ -116,7 +115,7 @@ public class TreviewDAO implements ITreviewDAO {
             System.out.println("데이터 저장 오류: " + ex.toString());
         }               
     }   
-    */
+    
     // 삭제
     @Override
     public void deleteReview(int rnum) {

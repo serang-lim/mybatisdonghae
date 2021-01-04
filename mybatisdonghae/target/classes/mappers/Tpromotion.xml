@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Tpromotion">
+<!-- 네임스페이스는 테이블 보통 테이블이름으로 설정함 -->
+	
+	
+	<!-- 쿼리문의 특수기호 인식위해 <![CDATA[]]>사용하여 []안에 쿼리문작성하기
+	<![CDATA[
+		쿼리문작성공간!!!!!!
+	]]>
+	 -->
+	
+	<select id="list" resultType="TpromotionDTO">
+	<![CDATA[
+		Select ticon, tbno,timage_name,tregion, tsubject, twdate
+		From Tpromotion
+		Order by tbno Desc
+	]]>
+	</select>
+
+	
+	<select id="read" parameterType="int" resultType="TpromotionDTO">
+	<![CDATA[
+		SELECT Tbno,Ticon,Timage_name,Timage_size,Timage_name2,Timage_size2, Tregion, Tsubject, Twdate, Ttime, Tnum, Twriter
+		From tpromotion
+		Where tbno=#{tbno}
+	]]>
+	</select>
+
+
+	<insert id="insert" parameterType="TpromotionDTO">
+	<![CDATA[
+		Insert into Tpromotion(Ticon,Tbno,Timage_name,Timage_size,Tregion,Tsubject,Twdate,Ttime,Tnum,Twriter,Timage_name2,Timage_size2)
+		Values (#{ticon},tbno_seq.nextval,#{timageName},#{timageSize},#{tregion},#{tsubject},sysdate,ADD_MONTHS(SYSDATE, 1),#{tnum},#{twriter},#{timageName2},#{timageSize2})
+	]]>	
+	</insert>
+
+	<update id="update" parameterType="TpromotionDTO">
+	<![CDATA[
+			Update Tpromotion
+			set Ticon=#{ticon},Timage_name=#{timageName},Timage_size=#{timageSize},Timage_name2=#{timageName},Timage_size2=#{timageSize}, Tregion=#{tregion}, Tsubject=#{tsubject}, Tnum=#{tnum}, Twriter=#{twriter}
+			Where tbno=#{tbno , jdbcType=NUMERIC}
+	]]>		
+	</update>
+
+
+	<delete id="delete" parameterType="int">
+	<![CDATA[
+		Delete From tpromotion 
+		Where tbno=#{tbno}		
+	]]>	
+	</delete>
+
+	
+</mapper>

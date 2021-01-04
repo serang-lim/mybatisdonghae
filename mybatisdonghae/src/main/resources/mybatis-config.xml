@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!-- mybatis-config.xml -->
+<configuration>
+
+	<!-- 클래스이름이 너무 길면 짧게 줄여 쓸수 있다 -->
+	<typeAliases>
+		<typeAlias alias="TpromotionDTO" type="kr.co.mybatisdonghae.Tpromotion.TpromotionDTO" />
+		<typeAlias alias="TreviewDTO" type="kr.co.mybatisdonghae.Treview.TreviewDTO" />
+	</typeAliases>
+	
+</configuration>

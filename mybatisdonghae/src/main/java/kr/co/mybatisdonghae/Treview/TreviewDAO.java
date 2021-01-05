@@ -2,7 +2,6 @@ package kr.co.mybatisdonghae.Treview;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -59,6 +58,13 @@ public class TreviewDAO implements ITreviewDAO {
 		sqlSession.update("treveiw.increaseCnt", rnum);
 	};
 	*/
+	
+	//등록
+    @Override
+    public void insert(TreviewDTO dto){
+    	System.out.println("===> Mybatis로 insert 기능 처리");
+		sqlSession.insert("treview.insert", dto);
+	}//insert() end
 	
 	//등록
     @Override
@@ -164,7 +170,7 @@ public class TreviewDAO implements ITreviewDAO {
         hm.put("fileName", fileName);
         hm.put("fileSize", fileSize);
          
-        sqlSession.selectOne("treview.uploadFile(hm)");
+        sqlSession.selectList("treview.uploadFile(hm)");
     }
 
 }//class end

@@ -18,7 +18,7 @@ public class TreviewDTO {
 
 	//-------------------------------------
 	
-	private MultipartFile photonameMF;
+	private MultipartFile uploadFile;
 	
 	//-------------------------------------
 	
@@ -85,21 +85,19 @@ public class TreviewDTO {
 		Rreadcnt = rreadcnt;
 	}
 
-	public MultipartFile getPhotonameMF() {
-		return photonameMF;
+	public MultipartFile getUploadFile() {
+		return uploadFile;
 	}
 
-	public void setPhotonameMF(MultipartFile photonameMF) {
-		this.photonameMF = photonameMF;
+	public void setUploadFile(MultipartFile uploadFile) {
+		this.uploadFile = uploadFile;
 	}
 
 	@Override
 	public String toString() {
 		return "TreviewDTO [Rnum=" + Rnum + ", Rsubject=" + Rsubject + ", Rcontent=" + Rcontent + ", Rpasswd=" + Rpasswd
 				+ ", Rphoto_name=" + Rphoto_name + ", Rphoto_size=" + Rphoto_size + ", Rregion=" + Rregion + ", Rid="
-				+ Rid + ", Rdate=" + Rdate + ", Rreadcnt=" + Rreadcnt + ", photonameMF=" + photonameMF + "]";
-	}
-	
-	
+				+ Rid + ", Rdate=" + Rdate + ", Rreadcnt=" + Rreadcnt + ", uploadFile=" + uploadFile + "]";
+	}	
 	
 }//class end

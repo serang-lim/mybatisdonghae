@@ -30,7 +30,7 @@
    	  <th>사진</th>
 	   <c:forEach var="uploadFile" items="${uploadFileList}">
 	      <tr>
-	          <td> <a href="/bbs2/download.do?realName=${uploadFile.realname}&fileName=${uploadFile.filename}">${uploadFile.realname}</a></td>
+	          <td> <a href="/treview/download.do?realName=${uploadFile.realname}&fileName=${uploadFile.filename}">${uploadFile.realname}</a></td>
 	          <script type="text/javascript">
 				var img = document.getElementsByTagName("img");
 				    for (var x = 0; x < img.length; x++) {

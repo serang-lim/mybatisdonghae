@@ -31,8 +31,8 @@
 	
 	<insert id="insert">
 		<![CDATA[
-	      INSERT INTO review (rnum, rsubject, rcontent, rpasswd, rregion, rid, rdate)
-	      VALUES (rnum_seq.nextval, #{rsubject}, #{rcontent}, #{rpasswd}, #{rregion}, #{rid}, sysdate)
+	      INSERT INTO review (rnum, rsubject, rcontent, rpasswd, ,rphoto_name, rregion, rid, rdate)
+	      VALUES (rnum_seq.nextval, #{rsubject}, #{rcontent}, #{rpasswd}, ,#{rphoto_name}, #{rregion}, #{rid}, sysdate)
 	      ]]>
 	</insert>
 	
@@ -71,7 +71,7 @@
     <insert id="uploadFile" parameterType="HashMap">
     <![CDATA[
     INSERT INTO
-    "HUMAN"."FILE_TABLE" (FILENUM, REALNAME, FILENAME, FILESIZE, NOTICEPK) 
+    "HUMAN"."TREVIEWFILE" (FILENUM, REALNAME, FILENAME, FILESIZE, NOTICEPK) 
     VALUES (file_seq.nextval, #{realName}, #{fileName}, #{fileSize}, rnum_seq.currval)
 	]]>
 	</insert>

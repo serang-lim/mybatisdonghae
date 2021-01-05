@@ -22,8 +22,8 @@
 	   <td><input type="text" name="rid"></td>
 	</tr>
 	<tr>
-	   <th><label for="c_attachFile1">첨부파일</label></th>
-	   <td><input type="file" name="uploadfile" multiple="multiple" size='50'></td>
+	   <th><label for="c_attachFile1">사진 올리기</label></th>
+	   <td><input type="file" name="uploadFile" multiple="multiple" size='50'></td>
 	</tr>
 	<tr>
 	   <th>지역</th>

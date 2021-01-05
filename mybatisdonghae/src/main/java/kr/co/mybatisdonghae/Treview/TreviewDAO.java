@@ -2,10 +2,12 @@ package kr.co.mybatisdonghae.Treview;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.transaction.TransactionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Repository;
@@ -58,31 +60,33 @@ public class TreviewDAO implements ITreviewDAO {
 	};
 	*/
 	
-	// 등록
+	//등록
     @Override
     public void createReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum) {
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        
+    	DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
         TransactionStatus status = txManager.getTransaction(def);        
         try {
             sqlSession.insert("treview.insert");
              
             if (fileNum != null) {
-                HashMap<String, String[]=""> fileVO = new HashMap<string, string[]="">();
+                HashMap<String, Object> fileVO = new HashMap();
                 fileVO.put("fileNum", fileNum);
-                sqlsession.insert("treview.deletefile");
+                sqlSession.insert("treview.deletefile");
             }
              
-            for (ReviewFileDTO file : filelist) {
-                file.setReviewPK(ReviewDTO.getReviewNum());
-                sqlsession.insert("treview.insertfile", file);
+            for (TreviewFileDTO file : filelist) {
+                file.setNoticePK(treviewDTO.getRnum());
+                sqlSession.insert("treview.insertfile", file);
             }
             txManager.commit(status);
         } catch (TransactionException ex) {
             txManager.rollback(status);
             System.out.println("데이터 저장 오류: " + ex.toString());
-        }           
-    }   
+        }     
+             
+    }//createReview() end   
     
     // 상세보기
     @Override
@@ -100,13 +104,13 @@ public class TreviewDAO implements ITreviewDAO {
         	sqlSession.update("treview.updateReview", treviewDTO);
              
             if (fileNum != null) {
-            	HashMap<String, String[]=""> fileVO = new HashMap<string, string[]="">();
+            	HashMap<String, Object> fileVO = new HashMap();
                 fileVO.put("fileNum", fileNum);
-                sqlsession.insert("treview.deletefile", fileVO);
+                sqlSession.insert("treview.deletefile", fileVO);
             }
              
-            for (ReviewFileDTO file : filelist) {
-                file.setReviewPK(ReviewDTO.getSnum());
+            for (TreviewFileDTO file : filelist) {
+            	file.setNoticePK(treviewDTO.getRnum());
                 sqlSession.insert("treview.insertfile", file);
             }
             txManager.commit(status);
@@ -150,6 +154,17 @@ public class TreviewDAO implements ITreviewDAO {
     @Override
     public String getMaxCode(){
         return sqlSession.selectOne("treview.maxCode");
+    }
+    
+    // 파일업로드
+    @Override
+    public void fileUpload(String realName, String fileName, long fileSize) {
+        HashMap<String, Object> hm = new HashMap();
+        hm.put("realName", realName);
+        hm.put("fileName", fileName);
+        hm.put("fileSize", fileSize);
+         
+        sqlSession.selectOne("treview.uploadFile(hm)");
     }
 
 }//class end

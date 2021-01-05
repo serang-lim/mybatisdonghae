@@ -22,5 +22,6 @@ public interface ITreviewDAO {
 	public Integer ReviewCount(SearchCriteria cri);
 	public List<TreviewFileDTO> flist(int rnum);
 	public String getMaxCode();
+	public void fileUpload(String realName, String fileName, long fileSize);
 	
 }//interface end

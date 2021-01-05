@@ -6,11 +6,13 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -87,11 +89,12 @@ public class TreviewCont {
 		return "redirect:/Treview/Treview.do";
 		
 	}//update() end
-	*/
+	
 	
 	 // 조회
-    @RequestMapping(value="/Treview/Treview.do")
-    public String list(SearchCriteria cri, Model model){
+    @RequestMapping("/Treview/Treview.do")
+    public String list(@RequestParam("rnum") int rnum,
+						SearchCriteria cri, Model model){
          
         int count = dao.ReviewCount(cri);
         model.addAttribute("count", count);
@@ -105,7 +108,27 @@ public class TreviewCont {
         model.addAttribute("pageMaker", pageMaker);
          
         return "Treview/Treviewlist";
-    }// listGET()
+    }// list()
+    */
+	
+	@Transactional
+	@RequestMapping("/Treview/Treview.do")
+	public String list(
+	        @RequestParam("rnum") int rnum,
+	        @RequestParam("perPageNum") int perPageNum,
+	        SearchCriteria cri, Model model) {
+	 
+	    // hit 수 증가
+	    dao.increaseCnt(rnum);
+	    // 게시글 가져오기
+	    TreviewDTO dto = dao.Revidewlist(rnum);
+	    List<TreviewFileDTO> uploadFileList = dao.getFileList(rnum);
+	 
+	    mav.addObject("uploadFileList", uploadFileList);
+	    mav.addObject("article", article);
+	    mav.addObject("pageNum", pageNum);
+	    return mav;
+	}
 	
   //-------------------------------------------------------------
     
@@ -132,15 +155,62 @@ public class TreviewCont {
     
     // 등록
     @RequestMapping("/Treview/create.do")
-    public String insert(int rnum, TreviewDTO treviewDTO, HttpServletRequest request){      
-        String[] fileNum = request.getParameterValues("fileNum");
-        TreviewFileUtil nf = new TreviewFileUtil();
-        nf.setConPath(request.getSession().getServletContext().getRealPath("/treviewUpload"));
-        List<TreviewFileDTO> filelist = nf.saveAllFiles(dao.setUploadfile);
-        dao.createReview(treviewDTO, filelist, fileNum);        
+    public String insert(int rnum, TreviewDTO treviewDTO, HttpServletRequest req
+    					,MultipartHttpServletRequest mhsq){      
+    	
+		 String[] fileNum = req.getParameterValues("fileNum");
+	     TreviewFileUtil nf = new TreviewFileUtil();
+	     nf.setConPath(req.getSession().getServletContext().getRealPath("/treviewUpload"));
+	     List<TreviewFileDTO> filelist = nf.saveAllFiles(dao.);
+	     dao.createReview(treviewDTO, filelist, fileNum); /*
+    	
+    	// 넘어온 파일을 리스트로 저장
+    	List<MultipartFile> fileList = mhsq.getFiles("file");
+        String src = mhsq.getParameter("src");
+        System.out.println("src value : " + src);
+ 
+        //String realFolder = "c:/upload2/";
+        String path = "C:/upload2/";
+
+        for (MultipartFile mf : fileList) {
+            String originFileName = mf.getOriginalFilename(); // 원본 파일 명
+            long fileSize = mf.getSize(); // 파일 사이즈
+
+            System.out.println("originFileName : " + originFileName);
+            System.out.println("fileSize : " + fileSize);
+
+            String safeFile = path + System.currentTimeMillis() + originFileName;
+            try {
+                mf.transferTo(new File(safeFile));
+            } catch (IllegalStateException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        if (fileList.size() == 1 && fileList.get(0).getOriginalFilename().equals("")) {
+        } else {
+            for (int i = 0; i < fileList.size(); i++) {
+                // 파일 중복명 처리
+                String genId = UUID.randomUUID().toString();
+                // 본래 파일명
+                String realName = fileList.get(i).getOriginalFilename();
+                String fileName = genId + "." + getExtension(realName);
+                // 저장되는 파일 이름
+                String savePath = realFolder + fileName; // 저장 될 파일 경로
+                long fileSize = fileList.get(i).getSize(); // 파일 사이즈
+                fileList.get(i).transferTo(new File(savePath)); // 파일 저장
+                dao.fileUpload(realName, fileName, fileSize);
+            }
+        }
+          
+        */   
+        
         return "redirect:/Treview/Treview.do";
     }//insert() end
-    
   //-------------------------------------------------------------
     
     // 수정 페이지

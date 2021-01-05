@@ -63,11 +63,19 @@
     <!-- 파일 업로드 -->
     <insert id="insertfile" parameterType="TreviewFileDTO">
     <![CDATA[
-    insert into treviewfile(rnum, FileName, RealName, Size)
-    values ( #{noticePK}, #{fileName}, #{realName}, #{size} )
+    insert into treviewfile(noticePK, FileName, RealName, Filesize)
+    values ( #{rnum}, #{fileName}, #{realName}, #{filesize} )
     ]]>
     </insert>
     
+    <insert id="uploadFile" parameterType="HashMap">
+    <![CDATA[
+    INSERT INTO
+    "HUMAN"."FILE_TABLE" (FILENUM, REALNAME, FILENAME, FILESIZE, NOTICEPK) 
+    VALUES (file_seq.nextval, #{realName}, #{fileName}, #{fileSize}, rnum_seq.currval)
+	]]>
+	</insert>
+	
     <!-- 파일 리스트 -->
     <select id="filelist" resultType="TreviewFileDTO">
 	      <![CDATA[
@@ -78,7 +86,7 @@
     </select>
      
     <!-- 파일 삭제 -->
-    <delete id="deletefile" parameterType="hashmap">  
+    <delete id="deletefile" parameterType="map">  
 	      <![CDATA[
 	    delete
 	    from treviewfile

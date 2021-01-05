@@ -27,19 +27,18 @@
       <th>작성일</th>
       <td>${dto.rdate}</td>
    </tr>
-   <tr>   
-      <th>사진</th>
-      <td>
-      <img src="../storage/${dto.rphoto_name}" style="size:30%">
-      <!-- img src="${pageContext.request.contextPath}${url}" style="size:30%"> -->
-		<script type="text/javascript">
-		var img = document.getElementsByTagName("img");
-		    for (var x = 0; x < img.length; x++) {
-		      img.item(x).onclick=function() {window.open(this.src)}; 
-		    }//for end
-		</script>
-      </td>
-   </tr>
+   	  <th>사진</th>
+	   <c:forEach var="uploadFile" items="${uploadFileList}">
+	      <tr>
+	          <td> <a href="/bbs2/download.do?realName=${uploadFile.realname}&fileName=${uploadFile.filename}">${uploadFile.realname}</a></td>
+	          <script type="text/javascript">
+				var img = document.getElementsByTagName("img");
+				    for (var x = 0; x < img.length; x++) {
+				      img.item(x).onclick=function() {window.open(this.src)}; 
+				    }//for end
+			  </script>
+	      </tr>
+	   </c:forEach>
    <tr>   
       <th>내용</th>
       <td>${dto.rcontent}</td>

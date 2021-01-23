@@ -23,7 +23,7 @@ import javax.swing.ImageIcon;
 
 public class Utility {
   // 서비스시에는 도메인으로 변경됨.
-  private static final String root = "/donghae";
+  private static final String root = "/mybatisdonghae";
 
   public static synchronized String getRoot() {
     return root;
@@ -169,7 +169,7 @@ public class Utility {
    */
   public static synchronized String convertChar(String str) {
 
-	str = str.replaceAll(" ", "&nbsp;");  
+   str = str.replaceAll(" ", "&nbsp;");
     str = str.replaceAll("<", "&lt;");
     str = str.replaceAll(">", "&gt;");
     str = str.replaceAll("'", "&apos;");   // '
@@ -178,6 +178,17 @@ public class Utility {
     
     return str;
   }
+  
+  public static synchronized String convertChar2(String str) {
+
+      str = str.replaceAll(" ", "&nbsp;");
+      str = str.replaceAll("<", "&lt;");
+      str = str.replaceAll(">", "&gt;");
+      str = str.replaceAll("'", "&apos;");   // '
+      str = str.replaceAll("\"", "&quot;"); // "
+      str = str.replaceAll("\r\n", "\n");  // 라인 변경
+      return str;
+    }
   
   public static synchronized String convertCharTA(String str) {
 

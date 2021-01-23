@@ -1,66 +1,61 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ include file="../header.jsp"%>
 <!-- 본 문 시 작 -->
+
 <h3 align="center"> 프 로 모 션 </h3>
-<form name="TpromotionWrite" enctype="multipart/form-data" method="post" action="TpromotionWrite2.do">
-	<table border="1" align="center">
+<form name="TpromotionWrite" enctype="multipart/form-data"
+	action="TpromotionInsert.do" method="post">
+	
+	<input type="hidden" name="twriter" id="twriter" value="${sessionScope.s_id}">
+	<div style="margin: 0 10% 0 10%;">
+	<table class="notice_tal">
 	<tr>
-	<th width="15%">분류</th>
-	<td><input type="text" name="ticon" id="ticon"></td>
-		<!-- <th width="15%">분류</th>
-		<td> <select name="ticon" id="ticon">
-				<option value="주위식당">주위식당</option>
-				<option value="주요행사">주요행사</option>
-				<option value="숙소">숙소</option>
-				<option value="액티비티">액티비티</option>
-			 </select>
-		</td> -->
+		<th width="30%">분류</th>
+			<td align="left"> <select name="ticon" id="ticon" style="width:30%;">
+					<option disabled selected>분류선택</option>
+					<option value="주위식당">주위식당</option>
+					<option value="주요행사">주요행사</option>
+					<option value="숙소">숙소</option>
+					<option value="액티비티">액티비티</option>
+					<option value="사진스팟">사진스팟</option>
+				 </select></td>
 	</tr>
 	<tr>
-	<th width="15%">지역</th>
-	<td><input type="text" name="tregion" id="tregion"></td>
-		<!-- <th width="15%">지역</th>
-			<td> <select name="tregion" id="tregion">
-				<option value="강릉">강릉</option>
-				<option value="속초">속초</option>
-				<option value="삼척">삼척</option>
-				<option value="동해">동해</option>
-			 </select></td> -->
+		<th>지역</th>
+				<td align="left"> <select name="tregion" id="tregion" style="width:30%;">
+					<option disabled selected>지역선택</option>
+					<option value="강릉">강릉</option>
+					<option value="속초">속초</option>
+					<option value="삼척">삼척</option>
+					<option value="동해">동해</option>
+				 </select></td>
 	</tr>
 	<tr>	
-		<th width="15%">사업자번호</th>
-			<td><input type="text" name="tnum" id="tnum"></td>
-	</tr>
-	<tr>	
-		<th width="15%">제목</th>
-			<td><input type="text" name="tsubject" id="tsubject"></td>
+		<th>제목</th>
+			<td align="left"><input type="text" name="tsubject" id="tsubject" required size="30%"></td>
 	</tr>
 	<tr>
-		<th width="15%">관리자아이디</th>
-			<td><input type="text" name="twriter" id="twriter" value="${s_id }"></td>
+		<th>메인 사진</th>
+			<td align="left"><input type="file" name="timage_nameMF" id="timage_nameMF" value="main사진" required></td>
 	</tr>
 	<tr>
-		<th width="15%">메인 사진</th>
-			<td><input type="file" name="timageNameMF" id="timageNameMF" value="main사진"></td>
+		<th>프로모션 사진</th>
+			<td align="left"><input type="file" name="timage_nameMF2" id="timage_nameMF2" value="read사진" required></td>
 	</tr>
 	<tr>
-		<th width="15%">프로모션 사진</th>
-			<td><input type="file" name="timageNameMF2" id="timageNameMF2" value="read사진"></td>
+		<th>비밀번호</th>
+			<td align="left" style="font-size:8pt; color:red;"><input type="password" name="tpasswd" id="tpasswd" required> &nbsp; *숫자로 입력 하세요</td>
 	</tr>
-	<tr>
-		<td colspan="2" align="center">
-		<input type="submit" value="프로모션등록">
-		
-		</td>
-		</tr>
 	</table>
-</form>
-	<div align="center">
-	<input type="button" value="목록으로" onclick="location.href='Tpromotion/Tpromotion.do'">
-	<input type="button" value="HOME" onclick="location.href='../index.do'">
 	</div>
+	<div align="center" style="padding: 1%  1%  1%  1%;">
+		<input type="submit" value="프로모션등록" style="background-color: white; color: black; font-size: 15px; width: 100px; height:40px;border-color: black; border-radius: 5px; font-size: 10pt;">
+		<input type="button" value="목록으로" onclick="location.href='Tpromotion.do'">
+		<input type="button" value="HOME" onclick="location.href='../home.do'">
+	</div>
+</form>
+
+
 <!-- 본 문 끝 !! -->
 <%@ include file="../footer.jsp"%>

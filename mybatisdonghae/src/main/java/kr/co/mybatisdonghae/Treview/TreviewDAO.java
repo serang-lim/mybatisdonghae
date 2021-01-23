@@ -1,176 +1,129 @@
 package kr.co.mybatisdonghae.Treview;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.transaction.TransactionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-@Repository //<-모델클래스로 지정하면 스프링 컨테이너에서 관리를 해줌
-public class TreviewDAO implements ITreviewDAO {
-	
-	//root Context.xml에서 <bean id="sqlSession">를 가리킴
-	@Inject //사용자가 직접 만들지 않고 스프링에서 생성해서 주입을 시킴
-	SqlSession sqlSession;
-	
-	@Autowired
-    private DataSourceTransactionManager txManager;
-	
-	/*
-	@Override
-	public List<TreviewDTO> list() throws Exception{
-		return sqlSession.selectList("treview.list");
-	}
-	
-	@Override
-	public TreviewDTO read(int rnum) throws Exception{
-		// selectOne() 레코드 1개
-		// selectList() 레코드 2개 이상
-		return sqlSession.selectOne("treview.read", rnum);
-	}//detail() end
+@Repository
+public class TreviewDAO implements ITreviewDAO{
+      
+    
+      @Inject
+      SqlSession sqlSession;
 
+      
+	  @Override    
+      public int seqselect() {
+    	    
+    	  return sqlSession.selectOne("Treview.seqselect");
+      }
+      
+      //---------------------------------------------------------------------------------------------
+      
+	 @Override
+      public int create(TreviewDTO dto) { //쓰기
+             return sqlSession.insert("Treview.create",dto); 
+      }//create() end
+     //----------------------------------------------------------------------------------------------- 
+     
+	 @Override
+	 public int fcreate(TreviewFileDTO fdto, int seq) { //쓰기
+			Map<String, Object> map=new HashMap<String, Object>();
+			map.put("filename", fdto.getFileName());
+			map.put("filesize", fdto.getFilesize());
+			map.put("rnum",seq);
+			
+           return sqlSession.insert("Treview.fcreate",map);
+       }//fcreate() end
+      
+    //---------------------------------------------------------------------------------------------
+      
+	@Override 
+      public List<TreviewDTO> list(){ //목록
+         return sqlSession.selectList("Treview.list");
+      }//list() end
+      
+    //---------------------------------------------------------------------------------------------
+      
 	@Override
-	public void insert(TreviewDTO dto) throws Exception{
-		sqlSession.insert("treview.insert", dto);
-	}//insert() end
-
-	@Override
-	public void update(TreviewDTO dto) throws Exception{
-		sqlSession.update("treview.update", dto);
-	}//update() end
-	
-	@Override
-	public void delete(int rnum) throws Exception{
-		sqlSession.delete("treview.delete", rnum);
-	}//delete() end
-	
-	//조회수 증가
-	@Override
-	public void increaseCnt(int rnum) throws Exception {
-		sqlSession.update("treveiw.increaseCnt", rnum);
-	};
-	*/
-	
-	//등록
-    @Override
-    public void insert(TreviewDTO dto){
-    	System.out.println("===> Mybatis로 insert 기능 처리");
-		sqlSession.insert("treview.insert", dto);
-	}//insert() end
-	
-	//등록
-    @Override
-    public void createReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum) {
-        
-    	DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        TransactionStatus status = txManager.getTransaction(def);        
-        try {
-            sqlSession.insert("treview.insert");
-             
-            if (fileNum != null) {
-                HashMap<String, Object> fileVO = new HashMap();
-                fileVO.put("fileNum", fileNum);
-                sqlSession.insert("treview.deletefile");
-            }
-             
-            for (TreviewFileDTO file : filelist) {
-                file.setNoticePK(treviewDTO.getRnum());
-                sqlSession.insert("treview.insertfile", file);
-            }
-            txManager.commit(status);
-        } catch (TransactionException ex) {
-            txManager.rollback(status);
-            System.out.println("데이터 저장 오류: " + ex.toString());
-        }     
-             
-    }//createReview() end   
-    
-    // 상세보기
-    @Override
-    public TreviewDTO readReview(int rnum) {
-        return sqlSession.selectOne("treview.read", rnum);
-    }
-    
-    // 업데이트 (+ 파일업데이트)
-    @Override
-    public void updateReview(TreviewDTO treviewDTO, List<TreviewFileDTO> filelist, String[] fileNum) {
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        TransactionStatus status = txManager.getTransaction(def);        
-        try {
-        	sqlSession.update("treview.updateReview", treviewDTO);
-             
-            if (fileNum != null) {
-            	HashMap<String, Object> fileVO = new HashMap();
-                fileVO.put("fileNum", fileNum);
-                sqlSession.insert("treview.deletefile", fileVO);
-            }
-             
-            for (TreviewFileDTO file : filelist) {
-            	file.setNoticePK(treviewDTO.getRnum());
-                sqlSession.insert("treview.insertfile", file);
-            }
-            txManager.commit(status);
-        } catch (TransactionException ex) {
-            txManager.rollback(status);
-            System.out.println("데이터 저장 오류: " + ex.toString());
-        }               
-    }   
-    
-    // 삭제
-    @Override
-    public void deleteReview(int rnum) {
-    	sqlSession.delete("treview.delete", rnum);        
-    }   
-    
-    // 조회수 증가
-    @Override
-    public void increaseCnt(int rnum) {
-    	sqlSession.update("treview.increaseCnt", rnum);     
-    }
-    
-    // 리스트(검색 + 페이징)
-    @Override
-    public List<TreviewDTO> Reviewlist(SearchCriteria cri) {
-        return sqlSession.selectList("treview.list", cri);
-    }
-    
-    // 페이징을 위한 카운트  
-    @Override
-    public Integer ReviewCount(SearchCriteria cri) {
-        return sqlSession.selectOne("treview.reviewcount", cri);
-    }
-    
-    // 파일리스트(해당 공지에 대해서)    
-    @Override
-    public List<TreviewFileDTO> flist(int rnum) {       
-        return sqlSession.selectList("treview.filelist", rnum);
-    }   
-    
-    // MAXCODE 증가
-    @Override
-    public String getMaxCode(){
-        return sqlSession.selectOne("treview.maxCode");
-    }
-    
-    // 파일업로드
-    @Override
-    public void fileUpload(String realName, String fileName, long fileSize) {
-        HashMap<String, Object> hm = new HashMap();
-        hm.put("realName", realName);
-        hm.put("fileName", fileName);
-        hm.put("fileSize", fileSize);
+      public TreviewDTO read(int rnum) { //상세보기
+    	  TreviewDTO dto=new TreviewDTO();
+          int cnt=sqlSession.update("Treview.readup", rnum);
+          if(cnt!=0) {
+        	  dto= sqlSession.selectOne("Treview.read", rnum);
+          }else {
+        	  dto=null;
+          }
+          return dto;
+       }//read() end
+     //----------------------------------------- 
+   
+	@Override  
+	public List<TreviewFileDTO> fread(int rnum){ //목록
          
-        sqlSession.selectList("treview.uploadFile(hm)");
-    }
+          return sqlSession.selectList("Treview.flist",rnum);
+       }//list() end
+     
+    //---------------------------------------------------------------------------------------------
+      
+      public int update(TreviewDTO dto) { 
+       
+               return sqlSession.update("Treview.update",dto);
+      }//update() end
+    //---------------------------------------------------------------------------------------------  
+      
+      public int pwcheck(TreviewDTO dto) {
+    	  
+    		return sqlSession.selectOne("Treview.pwcheck",dto);
+	    	}//pwcheck end
 
+    //---------------------------------------------------------------------------------------------
+      public int delete(int rnum) {
+       
+               return sqlSession.delete("Treview.delete",rnum);
+      }//delete() end
+      
+     //---------------------------------------------------------------------------------------------
+      
+      public int fdelete(int rnum) {
+         
+                return sqlSession.delete("Treview.fdelete",rnum);
+       }//delete() end
+      
+    //---------------------------------------------------------------------------------------------
+
+      public List<TreviewDTO> list2(String col, String word) {
+    	  	Map<String, Object>map=new HashMap<String, Object>();
+    	  	map.put("col", col);
+    	  	map.put("word", word);
+    	  	List<TreviewDTO> cno=null;
+    	  	if(col.equals("0")){
+        	  	cno=sqlSession.selectList("Treview.listA", map);
+    	  	}else if(word.equals(null)) {
+        	  	cno=sqlSession.selectList("Treview.listB", map);
+    	  	}else {
+        	  	cno=sqlSession.selectList("Treview.listC", map);
+    	  	}
+    	  	return cno;
+         }//list2() end
+   
+   
+       
+      
+      //글목록 구하기 
+      
+      
+      
+   
 }//class end

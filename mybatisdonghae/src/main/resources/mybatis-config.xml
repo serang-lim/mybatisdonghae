@@ -5,11 +5,20 @@
 <!-- mybatis-config.xml -->
 <configuration>
 
-	<!-- 클래스이름이 너무 길면 짧게 줄여 쓸수 있다 -->
-	<typeAliases>
-		<typeAlias alias="TpromotionDTO" type="kr.co.mybatisdonghae.Tpromotion.TpromotionDTO" />
-		<typeAlias alias="TreviewDTO" type="kr.co.mybatisdonghae.Treview.TreviewDTO" />
-		<typeAlias alias="TreviewFileDTO" type="kr.co.mybatisdonghae.Treview.TreviewFileDTO" />
-	</typeAliases>
-	
+   <!-- 클래스이름이 너무 길면 짧게 줄여 쓸수 있다 -->
+   <typeAliases>
+      <typeAlias alias="TmemberDTO" type="kr.co.mybatisdonghae.Tmember.TmemberDTO" />
+      <typeAlias alias="TnoticeDTO" type="kr.co.mybatisdonghae.Tnotice.TnoticeDTO" />
+      <typeAlias alias="TlikelocationDTO" type="kr.co.mybatisdonghae.Tlikelocation.TlikelocationDTO" />
+      <typeAlias alias="TreviewDTO" type="kr.co.mybatisdonghae.Treview.TreviewDTO" />
+      <typeAlias alias="TreviewFileDTO" type="kr.co.mybatisdonghae.Treview.TreviewFileDTO" />      
+      <typeAlias alias="TrouteDTO" type="kr.co.mybatisdonghae.Troute.TrouteDTO" />
+      <typeAlias alias="TrouteconDTO" type="kr.co.mybatisdonghae.Troute.TrouteconDTO" />
+      <typeAlias alias="HeartDTO" type="kr.co.mybatisdonghae.Troute.HeartDTO" />
+      <!-- 
+      <typeAlias alias="TpromotionDTO" type="kr.co.mybatisdonghae.Tpromotion.TpromotionDTO" />
+      <typeAlias alias="TreserveDTO" type="kr.co.mybatisdonghae.Treserve.TreserveDTO" />
+      -->
+   </typeAliases>
+   
 </configuration>

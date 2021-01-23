@@ -2,134 +2,117 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="treview">
-<!-- 네임스페이스는 테이블 보통 테이블이름으로 설정함 -->
-
-	<select id="list" resultType="TreviewDTO">
-		<![CDATA[
-	      SELECT rreadcnt, rnum, rsubject, rregion, rid, rdate
-	      FROM review
-	      ORDER BY rnum DESC
-	      ]]>
-	</select>
-	
-	<!-- 게시글 번호 증가 -->
-    <select id="maxCode" resultType="string">
-    <![CDATA[
-        select IFNULL(MAX(rnum)+1, 1)
-        from review
-      ]]>
-    </select>
-	
-	<select id="read" resultType="TreviewDTO">
-		<![CDATA[
-	      SELECT *, IF(DATE_SUB(NOW(), INTERVAL 7 DAY) <= rdate, 1, 0) AS icon
-	      FROM review
-	      WHERE rnum=#{rnum}
-	      ]]>
-	</select>
-	
-	<insert id="insert">
-		<![CDATA[
-	      INSERT INTO review (rnum, rsubject, rcontent, rpasswd, ,rphoto_name, rregion, rid, rdate)
-	      VALUES (rnum_seq.nextval, #{rsubject}, #{rcontent}, #{rpasswd}, ,#{rphoto_name}, #{rregion}, #{rid}, sysdate)
-	      ]]>
-	</insert>
-	
-	<update id="update">
-		<![CDATA[
-         UPDATE review SET rsubject=#{rsubject}, scontent=#{scontent}, sregion=#{sregion}, spasswd=#{spasswd}
-         WHERE rnum=#{rnum}
-         ]]>
-	</update>
-	
-	 <delete id="delete">
+<mapper namespace="Treview">
+ <select id="seqselect" parameterType="int" resultType="TreviewDTO">
+<![CDATA[
+      Select max(rnum)
+	  From review
+   ]]>
+  </select>
+ <insert id="create" parameterType="TreviewDTO">
+	   <![CDATA[
+	 	INSERT INTO review(Rnum, Rsubject, Rcontent, Rpasswd, Rregion, Rid, Rdate, tno)		
+ 		VALUES( Rnum_seq.nextval, #{Rsubject}, #{Rcontent}, #{Rpasswd}, #{Rregion}, #{Rid}, sysdate, #{tno})	   
+	   ]]>
+  </insert> 
+ 
+ <insert id="fcreate" parameterType="Hashmap">
+   	   <![CDATA[
+		INSERT INTO treviewfile(filenum, filename, filesize, rnum)
+ 		VALUES( filenum_seq.nextval, #{filename}, #{filesize}, #{rnum})	   
+ 		]]>
+  </insert> 
+  
+  <select id="list"  resultType="TreviewDTO">
       <![CDATA[
-         DELETE FROM review
+      SELECT Rreadcnt, Rnum, Rsubject, Rregion, Rid, Rdate
+      FROM review
+      ORDER BY Rnum DESC
+      ]]>
+   </select> 
+   
+    <update id="readup" parameterType="int">
+      <![CDATA[
+         UPDATE review 
+         SET Rreadcnt=Rreadcnt+1
          WHERE rnum=#{rnum}
       ]]>
+   </update>
+   
+   <select id="read" parameterType="int" resultType="TreviewDTO">
+         <![CDATA[
+	   SELECT Rnum, Rsubject, Rcontent, Rregion, Rid, Rdate, Rreadcnt, tno
+	   FROM review
+	   WHERE Rnum=#{Rnum}
+         ]]>
+
+   </select>
+   
+   <select id="flist" parameterType="int" resultType="TreviewFileDTO">
+   <![CDATA[
+   SELECT filenum, filename, filesize, rnum
+   FROM treviewfile
+   Where rnum=#{rnum}
+   ORDER BY filenum DESC
+     ]]>
+   </select>
+   
+   <update id="update" parameterType="TreviewDTO">
+   <![CDATA[
+  	  UPDATE review
+  	  SET Rsubject=#{Rsubject}, Rcontent=#{Rcontent}, Rregion=#{Rregion}, Rpasswd=#{Rpasswd}
+  	  WHERE Rnum=#{Rnum}
+     ]]>
+   </update>
+   
+   <select id="pwcheck" parameterType="TreviewDTO" resultType="int">
+      <![CDATA[
+   SELECT COUNT(rnum) as cnt
+   FROM review
+   WHERE Rnum=#{Rnum} AND rpasswd=#{rpasswd}
+        ]]>
+   
+   </select>
+   
+   <delete id="delete" parameterType="int">
+   <![CDATA[
+   DELETE FROM review
+   WHERE Rnum=#{Rnum}
+     ]]>
    </delete>
    
-    <!-- 조회수 증가 -->
-    <update id="increaseCnt">
-      <![CDATA[    
-        update review set
-            rreadcnt = rreadcnt + 1 
-        where
-            rnum = #{rnum}
-      ]]>      
-    </update>   
-    
-    <!-- 파일 업로드 -->
-    <insert id="insertfile" parameterType="TreviewFileDTO">
-    <![CDATA[
-    insert into treviewfile(noticePK, FileName, RealName, Filesize)
-    values ( #{rnum}, #{fileName}, #{realName}, #{filesize} )
-    ]]>
-    </insert>
-    
-    <insert id="uploadFile" parameterType="HashMap">
-    <![CDATA[
-    INSERT INTO
-    "HUMAN"."TREVIEWFILE" (FILENUM, REALNAME, FILENAME, FILESIZE, NOTICEPK) 
-    VALUES (file_seq.nextval, #{realName}, #{fileName}, #{fileSize}, rnum_seq.currval)
-	]]>
-	</insert>
-	
-    <!-- 파일 리스트 -->
-    <select id="filelist" resultType="TreviewFileDTO">
-	      <![CDATA[
-	    select * from treviewfile
-	    where rnum = #{rnum}
-	    order by FileNum asc
-	    ]]>
-    </select>
-     
-    <!-- 파일 삭제 -->
-    <delete id="deletefile" parameterType="map">  
-	      <![CDATA[
-	    delete
-	    from treviewfile
-	    where FileNum in (
-	        <foreach item="item" index="index" collection="fileNum" separator=",">
-	            ${item}
-	        </foreach>
-	        )
-	      ]]>  
-    </delete>
-    
-    <!-- 페이징 + 검색처리된 게시물 조회(게시판 전체) -->
-    <sql id="testing">
-    <if test="searchType != null">
-        <if test="searchType == 't'.toString()">
-        where Title like CONCAT("%", #{keyword} ,"%") 
-        </if>
-        <if test="searchType == 'w'.toString()">
-        where Writer like CONCAT("%", #{keyword} ,"%")
-        </if>
-    </if>   
-    </sql>
-     
-    <select id="listtreview" resultType="TreviewDTO" parameterType="searchCriteria">
-	      <![CDATA[
-	    SELECT
-	    nb.*, 
-	    nbf.FileNum,
-	    IF(DATE_SUB(NOW(), INTERVAL 7 DAY) <= nb.rdate, 1, 0) AS icon
-	    FROM review nb
-	    LEFT JOIN treviewfile nbf ON (nb.rnum = nbf.rnum) 
-	         
-	    order by nb.rnum DESC
-	    limit #{pageStart}, #{perPageNum}
-	    	]]>
-    </select>
- 
-    <!-- 검색 결과 게시물 총 갯수 계산 -->
-    <select id="reviewcount" resultType="java.lang.Integer" parameterType="searchCriteria">
-	      <![CDATA[
-	    SELECT COUNT(*) FROM review nb
-	    LEFT JOIN treviewfile nbf ON (nb.rnum = nbf.rnum)
-	     ]]>
-    </select>
-    
+   <delete id="fdelete" parameterType="int">
+   <![CDATA[
+     DELETE FROM treviewfile
+     WHERE Rnum=#{Rnum}
+     ]]>
+   </delete>
+   
+   <select id="listA" resultType="TreviewDTO">
+      <![CDATA[
+   SELECT Rreadcnt, Rnum, Rsubject, Rregion, Rid, Rdate
+   From review
+   Where Rid like '%"+word+"%'
+   Order by rnum desc
+        ]]>
+   </select>
+   
+   <select id="listB" resultType="TreviewDTO">
+      <![CDATA[
+   SELECT Rreadcnt, Rnum, Rsubject, Rregion, Rid, Rdate
+   From review
+   Where Rregion=#{Rregion}
+   Order by rnum desc
+        ]]>
+   </select>
+   
+   <select id="listC" resultType="TreviewDTO">
+      <![CDATA[
+   	SELECT Rreadcnt, Rnum, Rsubject, Rregion, Rid, Rdate
+   	From review
+	Where Rregion=#{Rregion} and Rid like '%"+word+"%'   
+	Order by rnum desc
+        ]]>
+   </select>
+   
 </mapper>

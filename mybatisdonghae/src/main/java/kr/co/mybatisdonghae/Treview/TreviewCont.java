@@ -2,285 +2,452 @@ package kr.co.mybatisdonghae.Treview;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import net.utility.UploadSaveManager;
+import net.utility.Utility;
 
 @Controller
-public class TreviewCont {
+public class TreviewCont {	
 
-	@Inject
-	TreviewDAO dao;
-	
-	public TreviewCont() {
-		System.out.println("---TreviewCont() 객체 생성됨...");
-	}//MemberCont() end
-	
-	/*-------------------------------------------------------------
-	
-	@RequestMapping("/Treview/Treview.do")
-	public String list(Model model) throws Exception {
-		
-		List<TreviewDTO> list = dao.list();
-	       model.addAttribute("list", list);
-	       //System.out.println(list);
+   @Autowired
+   TreviewDAO dao;
 
-		return "Treview/Treviewlist";
-	}//list() end
-	//-------------------------------------------------------------
-	
-	@RequestMapping("/Treview/read.do")
-	public String read(@RequestParam(required=false, defaultValue="0") int rnum, Model model) throws Exception {
-		model.addAttribute("dto", dao.read(rnum));
-		System.out.println(dao.read(rnum));
-		return "Treview/Treviewread";
-	}//read() end
-	
-	//-------------------------------------------------------------
-	@RequestMapping("/Treview/createrform.do")
-	public String createrform() {
-		return "Treview/Treviewcreate";
-	}//createrform end
-	
-	@RequestMapping("/Treview/create.do")
-	public String insert(@RequestParam("photonameMF")MultipartFile[] files
-										, TreviewDTO treviewDTO
-										,MultipartHttpServletRequest req
-										, Model model) throws Exception {
-		
-		String uploadPath=req.getRealPath("./storage");
-		
-		
-		dao.insert(dto);
-		  System.out.println(dto.toString());
-			
-		return "redirect:/Treview/Treview.do";
-	}//insert() end
-	
-	//-------------------------------------------------------------
-	@RequestMapping("/Treview/updateform.do")
-	public String updateForm(@RequestParam(required=false, defaultValue="0") int rnum, Model model) throws Exception {
-		model.addAttribute("dto", dao.read(rnum));  
-		return "Treview/Treviewupd";
-   }//updateForm() end
-	
-	@RequestMapping("/Treview/update.do")
-	public String update(@ModelAttribute TreviewDTO dto) throws Exception {
-		dao.update(dto);
-		System.out.println(dto.toString());
-		
-		return "redirect:/Treview/Treview.do";
-		
-	}//update() end
-	//-------------------------------------------------------------
-	@RequestMapping("/Treview/delete.do")
-	public String delete(@RequestParam(required=false, defaultValue="0") int rnum, Model model) throws Exception {
-		dao.delete(rnum);
-		
-		return "redirect:/Treview/Treview.do";
-		
-	}//update() end
-	*/
-	
-	 // 조회
-    @RequestMapping("/Treview/Treview.do")
-    public String list(@RequestParam("rnum") int rnum,
-						SearchCriteria cri, Model model){
-         
-        int count = dao.ReviewCount(cri);
-        model.addAttribute("count", count);
-         
-        model.addAttribute("list", dao.Reviewlist(cri));
-        PageMaker pageMaker = new PageMaker();
+   public TreviewCont() {
+      System.out.println("---TreviewCont()객체 생성됨");
+   }// MediaCont() end
+
+//----------------------------------------------------------------------------------------   
+   @RequestMapping("Treview/Treview.do")
+   public ModelAndView list(TreviewDTO dto) {
+      ModelAndView mav = new ModelAndView();
+      mav.setViewName("Treview/Treviewlist");
+      mav.addObject("root", Utility.getRoot());
+      mav.addObject("list", dao.list());
+      return mav;
+   }// list() end
+
+//----------------------------------------------------------------------------------------   
+   @RequestMapping(value = "/Treview/read.do", method = RequestMethod.GET)
+   public ModelAndView read(int rnum, HttpServletRequest req) {
+      ModelAndView mav=new ModelAndView();
+      TreviewDTO dto=dao.read(rnum);
+      List<TreviewFileDTO> fdto=dao.fread(rnum);
+      if(dto!=null) {
+          mav.setViewName("Treview/Treviewread");
+          mav.addObject("root", Utility.getRoot());
+          mav.addObject("dto",dto);  
+          mav.addObject("list",fdto);  
+          }//if end
+      
+      return mav;
+   }//read() end
  
-        pageMaker.setCri(cri);
-        pageMaker.setTotalCount(dao.ReviewCount(cri));
-        
-	     
-        model.addAttribute("pageMaker", pageMaker);
-        model.addAttribute("dto", dao.readReview(rnum)); 
-        return "Treview/Treviewlist";
-    }// list()
-  //-------------------------------------------------------------
-    
-    // 상세보기
-    @RequestMapping("/Treview/read.do")
-    public String read(@RequestParam(required=false, defaultValue="0") int rnum, @ModelAttribute("cri") SearchCriteria cri, Model model){
-        dao.increaseCnt(rnum);
-        List<TreviewFileDTO> uploadFileList = dao.flist(rnum);
-        
-        model.addAttribute("uploadFileList", uploadFileList);  
-        model.addAttribute("cri", cri);
-        model.addAttribute("dto", dao.readReview(rnum));     
-        return "Treview/Treviewread";
-    }// read() end
+//----------------------------------------------------------------------------------------
+   @RequestMapping(value = "Treview/createrform.do", method = RequestMethod.GET)
+   public String createForm(HttpServletRequest req) {
+	  int tno=Integer.parseInt(req.getParameter("tno"));
+	  String rregion=req.getParameter("rregion");
+	  req.setAttribute("tno", tno);
+	  req.setAttribute("rregion", rregion);
+      return "Treview/Treviewcreate";
+   }// createform() end
 
-     
-  //-------------------------------------------------------------
-    
-	// 등록 페이지
-    @RequestMapping("/Treview/createrform.do")
-    public String createrform(Model model) throws Exception{
-        model.addAttribute("maxCode", dao.getMaxCode()); 
-        return "Treview/Treviewcreate";
-    }//noticeWrite() end
-    
-    // 등록
-    @RequestMapping("/Treview/create.do")
-    public String insert(int rnum, TreviewDTO dto, Model model) throws IOException{   
-		// 파일 업로드 처리
-		String fileName = null;
-		MultipartFile uploadFile = dto.getUploadFile();
-		if (!uploadFile.isEmpty()) {
-			String originalFileName = uploadFile.getOriginalFilename();
-			String ext = FilenameUtils.getExtension(originalFileName);	//확장자 구하기
-			UUID uuid = UUID.randomUUID();	//UUID 구하기
-			fileName=uuid+"."+ext;
-			uploadFile.transferTo(new File("./storage/" + fileName));
-		}
-		dto.setRphoto_name(fileName);
-		dao.insert(dto);
-		return "redirect:/Treview/Treview.do";
-    }//insert() end
-    	
-    	/*
-    	  
-    	String[] fileNum = req.getParameterValues("fileNum");
-    	String src = mhsq.getParameter("src");
-    	// 넘어온 파일을 리스트로 저장
-    	List<MultipartFile> fileList = mhsq.getFiles("uploadFile");
-        System.out.println("src value : " + src);
-        
-        String realFolder = "c:/upload2/";
-        File dir = new File(realFolder);
-        if (!dir.isDirectory()) {
-            dir.mkdirs();
-        }
-        		
-    	if (fileList.size() == 1 && fileList.get(0).getOriginalFilename().equals("")) {
-        } else {
-            for (int i = 0; i < fileList.size(); i++) {
-                // 파일 중복명 처리
-                String genId = UUID.randomUUID().toString();
-                // 본래 파일명
-                String realName = fileList.get(i).getOriginalFilename();
-                String fileName = genId + "." + getExtension(realName);
-                // 저장되는 파일 이름
-                String savePath = realFolder + fileName; // 저장 될 파일 경로
-                long fileSize = fileList.get(i).getSize(); // 파일 사이즈
-                fileList.get(i).transferTo(new File(savePath)); // 파일 저장
-                dao.fileUpload(realName, fileName, fileSize);
-            }	
-        }
-		 String[] fileNum = req.getParameterValues("fileNum");
-	     TreviewFileUtil nf = new TreviewFileUtil();
-	     nf.setConPath(req.getSession().getServletContext().getRealPath("/treviewUpload"));
-	     List<TreviewFileDTO> filelist = nf.saveAllFiles();
-	     dao.createReview(treviewDTO, filelist, fileNum); 
-	    
-    	---------------------------------------------------------------------------------------
-    	// 넘어온 파일을 리스트로 저장
-    	List<MultipartFile> fileList = mhsq.getFiles("uploadFile");
-        String src = mhsq.getParameter("src");
-        System.out.println("src value : " + src);
- 
-        //String realFolder = "c:/upload2/";
-        String path = "C:/upload2/";
+ //------------------------------------------------------------------------------------------  
+   
+   @RequestMapping(value = "Treview/create.do", method = RequestMethod.POST)
+   public ModelAndView createProc(@ModelAttribute TreviewDTO dto , TreviewFileDTO fdto
+                           ,MultipartHttpServletRequest req
+                           ,HttpServletResponse resp
+                           ,HttpSession session
+                           ,@RequestParam("photonameMF")MultipartFile file
+                           ) throws IOException {
+	   //String msg="";
+	   ModelAndView mav = new ModelAndView();
+       mav.setViewName("Treview/msg");
+      
+	   if(file.getSize()==0) { //처음 파일 없을때
+		  int cnt=dao.create(dto);
+		  if(cnt==0) {
+		  	  mav.addObject("msg","게시물 등록에 실패하였습니다");
+		  	  mav.addObject("back","history.back()");
+          }else {
+        	  mav.addObject("msg","등록되었습니다.");
+        	  mav.addObject("url","../Treview/Treview.do");
+          }//if end
+	   }else { //파일이 있을때
+		   mav.addObject("root", Utility.getRoot());
+		   int cnt=dao.create(dto);
+		   int seq=dao.seqselect();
 
-        for (MultipartFile mf : fileList) {
-            String originFileName = mf.getOriginalFilename(); // 원본 파일 명
-            long fileSize = mf.getSize(); // 파일 사이즈
+		   System.out.println(seq);
+		   if(cnt==0) { //cnt를 못갖고와서 실패
+			   mav.addObject("msg","게시물 등록에 실패하였습니다");
+			   mav.addObject("back","history.back()");
+		   }else { //cnt를 제대로 갖고와서 등록
+			   mav.addObject("msg","등록되었습니다.");
+			   mav.addObject("url","../Treview/Treview.do");
+			   System.out.println("후기 등록 성공");
+	     	     
+	         List<MultipartFile> fileList = req.getFiles("photonameMF");
+	         String path=req.getRealPath("/resources/storage");
+	         File fileDir = new File(path);
+	         
+	         if(!fileDir.exists()) {
+	            fileDir.mkdir();
+	         }//if end
+	         
+	         long time = System.currentTimeMillis();
+	         int cnt1=0;
+	         for(MultipartFile mf : fileList) {
+	           String orgFileName=mf.getOriginalFilename();//원본파일명
+	           String photonameMF=String.format("%d_%s", time,orgFileName);
+	           fdto.setFileName(photonameMF);
+	           fdto.setFilesize(mf.getSize());
+	           cnt1=dao.fcreate(fdto, seq);
+	           try {
+	              //파일생성
+	              mf.transferTo(new File(path, photonameMF));
+	              //mf.getInputStream();
+	           }catch (Exception e) {
+	              System.out.println("파일생성 실패"+e);
+	           }//try end
 
-            System.out.println("originFileName : " + originFileName);
-            System.out.println("fileSize : " + fileSize);
+	          System.out.println(fdto.toString());
 
-            String safeFile = path + System.currentTimeMillis() + originFileName;
-            try {
-                mf.transferTo(new File(safeFile));
-            } catch (IllegalStateException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }//end
-        }//for end
-        ------------------------------------------------
-        if (fileList.size() == 1 && fileList.get(0).getOriginalFilename().equals("")) {
-        } else {
-            for (int i = 0; i < fileList.size(); i++) {
-                // 파일 중복명 처리
-                String genId = UUID.randomUUID().toString();
-                // 본래 파일명
-                String realName = fileList.get(i).getOriginalFilename();
-                String fileName = genId + "." + getExtension(realName);
-                // 저장되는 파일 이름
-                String savePath = realFolder + fileName; // 저장 될 파일 경로
-                long fileSize = fileList.get(i).getSize(); // 파일 사이즈
-                fileList.get(i).transferTo(new File(savePath)); // 파일 저장
-                dao.fileUpload(realName, fileName, fileSize);
-            }
-        }//if end
-          
-           
-        
-        
+	         }//for end
+	         if(cnt1==0) {
+	        	 System.out.println("사진 등록 실패");
+	          }else {
+	        	 System.out.println("사진 등록 성공");
+	          }//if end
+	     }//if end
+		      	 System.out.println(dto.toString());
+	   }//if end
+      return mav;
+   
+   }//createProc() end
+   
+ //------------------------------------------------------------------------------------------
 
-//-------------------------------------------------------------
-    
-    // 수정 페이지
-    @RequestMapping("/Treview/updateform.do")
-    public String updateForm(@RequestParam("rnum") int rnum, @ModelAttribute("cri") SearchCriteria cri, Model model) {      
-        model.addAttribute("dto", dao.readReview(rnum));
-        List<TreviewFileDTO> fileview = dao.flist(rnum);
-        model.addAttribute("fileview", fileview);
-        return "Treview/Treviewupd";
-    }
+   @RequestMapping(value = "Treview/upcheckform.do", method = RequestMethod.GET)
+   public ModelAndView upcheckform(@ModelAttribute TreviewDTO dto
+									 ,HttpServletRequest req
+									 ,HttpServletResponse resp
+									 ,HttpSession session) {
+	   ModelAndView mav = new ModelAndView();
+	   
+	   mav.setViewName("Treview/upcheck");
+	   mav.addObject("root", Utility.getRoot());
+	   mav.addObject("dto", dao.read(dto.getRnum()));
+       return mav;
+      
+   }//upcheckform() end
 
-    // 수정
-    @RequestMapping(value="/noticeUpdate.do", method=RequestMethod.POST)
-    public String update(int rnum, TreviewDTO treviewDTO, SearchCriteria cri, RedirectAttributes rttr, HttpServletRequest request){
+ //--------------------------------------------------------------------------------------------------------------------------
+   
+   @RequestMapping(value = "Treview/upcheck.do", method = {RequestMethod.POST, RequestMethod.GET})
+   public ModelAndView upcheck(TreviewDTO dto
+								  ,HttpServletRequest req
+								  ,HttpServletResponse resp
+								  ,HttpSession session) throws IOException{
+	   int rnum = Integer.parseInt(req.getParameter("rnum"));
+	   dto.setRnum(rnum);
+	   ModelAndView mav= new ModelAndView();
+	   
+	   String rpasswd=req.getParameter("rpasswd").trim(); 
+	   mav.addObject("root", Utility.getRoot());
+	   
+	   int cnt=0;
+	   
+	   dto.setRpasswd(rpasswd);
+	   cnt=dao.pwcheck(dto);
+	   req.setAttribute("rpasswd", rpasswd);
+	   System.out.println(rpasswd);
+	   System.out.println(cnt);
+	   
+	    if(cnt==0) {
+	    	resp.setContentType("text/html; charset=UTf-8;");
+	    	PrintWriter out = resp.getWriter();
+	    	out.println("<script> alert('비밀번호가 일치하지 않습니다');");
+	    	out.println("history.back(); </script>");
+	    	//out.println("location.href='../Treview/Treview.do'; </script>");
+	    	out.flush();
+	    }else {
+	    	mav.setViewName("Treview/upalert");
+	    	mav.addObject("dto",dto);
+	        System.out.println(dto);
+	    }
+      return mav;
+      
+   }//upcheck() end
+//-----------------------------------------------------------------------
+   
+   @RequestMapping(value="Treview/updateform.do", method = RequestMethod.GET)
+      public ModelAndView updateForm(TreviewDTO dto, TreviewFileDTO fdto) {
+         ModelAndView mav = new ModelAndView();
+         mav.setViewName("Treview/Treviewupd");
+         mav.addObject("root", Utility.getRoot());
+         //수정하고자 하는 행 가져오기
+         mav.addObject("dto", dao.read(dto.getRnum()));
+         return mav;
+      }//updateForm() end
+ //--------------------------------------------------------------------------------------------------------------------------   
+   @RequestMapping(value="Treview/update.do", method = RequestMethod.POST)
+   public ModelAndView updateProc(TreviewDTO dto
+		   						,TreviewFileDTO fdto
+		   						,MultipartHttpServletRequest req
+		   						,HttpServletResponse resp
+		   						,@RequestParam("photonameMF")MultipartFile file) throws IOException{
+	   ModelAndView mav = new ModelAndView();
+	   mav.addObject("root", Utility.getRoot());
+	   mav.setViewName("Treview/msg");
+
+		 //String basePath=req.getRealPath("./storage"); //삭제하고자 하는 정보 가져오기
+	   	 String basePath=req.getSession().getServletContext().getRealPath("/resources/storage");
+		 TreviewDTO oldDTO=dao.read(dto.getRnum()); 
+		 List<TreviewFileDTO> oldfDTO=dao.fread(dto.getRnum());
+		 
+		 if(file.getSize()==0) {//사진 안올릴때
+			 int cnt=dao.update(dto);
+			 dao.fdelete(dto.getRnum());
+			 if(oldfDTO!=null) {
+			     int cnt1=dao.fdelete(dto.getRnum());
+				 for(int i=0; i<oldfDTO.size(); i++) {
+		        	 UploadSaveManager.deleteFile(basePath, oldfDTO.get(i).getFileName());
+		         }//for end
+				 if(cnt1==0) { //삭제되었는지?
+					 mav.addObject("msg","수정 실패하였습니다");
+				  	 mav.addObject("back","history.back()");
+				     System.out.println("수정 실패하였습니다.1");
+			      }else {
+			    	 mav.addObject("msg","수정되었습니다.");
+					 mav.addObject("url","../Treview/Treview.do");
+					 System.out.println("수정되었습니다.1");
+			      }//if end
+			 }//if end
+			 if(cnt==0) { //삭제되었는지?
+				 mav.addObject("msg","수정 실패하였습니다.");
+			  	 mav.addObject("back","history.back()");
+			     System.out.println("수정 실패하였습니다.2");
+		      }else {
+		      	 mav.addObject("msg","수정되었습니다.");
+				 mav.addObject("url","../Treview/Treview.do");
+				 System.out.println("수정되었습니다.2");
+		      }//if end
+		 }else {
+			 //파일수정할때
+			 if(oldfDTO==null) {//기존 사진 없을때
+				 //파일테이블create
+				 List<MultipartFile> fileList = req.getFiles("photonameMF");
+		         String path=req.getRealPath("/resources/storage");
+		         File fileDir = new File(path);
+		         
+		         if(!fileDir.exists()) {
+		            fileDir.mkdir();
+		         }//if end
+		         
+		         long time = System.currentTimeMillis();
+		         int cnt1=0;
+		         for(MultipartFile mf : fileList) {//
+		           String orgFileName=mf.getOriginalFilename();//원본파일명
+		           String photonameMF=String.format("%d_%s", time,orgFileName);
+		           fdto.setFileName(photonameMF);
+		           fdto.setFilesize(mf.getSize());
+		           cnt1=dao.fcreate(fdto, dto.getRnum());
+		           try {
+		              //파일생성
+		              mf.transferTo(new File(path, photonameMF));
+		              //mf.getInputStream();
+		           }catch (Exception e) {
+		              System.out.println("파일생성 실패"+e);
+		           }//try end
+		           if(cnt1==0) { //수정 되었는지?
+				    	 System.out.println("사진 수정 실패");
+				      }else {
+				         System.out.println("사진 수정 되었습니다");
+				      }//if end
+		         }//for end
+			 }else {//기존 사진 존재할때
+				 
+		          dao.fdelete(dto.getRnum());
+	
+				 List<MultipartFile> fileList = req.getFiles("photonameMF");
+		         String path=req.getRealPath("/resources/storage");
+		         File fileDir = new File(path);
+		         
+		         if(!fileDir.exists()) {
+		            fileDir.mkdir();
+		         }//if end
+		         
+		         long time = System.currentTimeMillis();
+		         int cnt1=0;
+		         for(MultipartFile mf : fileList) {//
+		           String orgFileName=mf.getOriginalFilename();//원본파일명
+		           String photonameMF=String.format("%d_%s", time,orgFileName);
+		           fdto.setFileName(photonameMF);
+		           fdto.setFilesize(mf.getSize());
+		           cnt1=dao.fcreate(fdto, dto.getRnum());
+		           try {
+		              //파일생성
+		              mf.transferTo(new File(path, photonameMF));
+		              //mf.getInputStream();
+		           }catch (Exception e) {
+		              System.out.println("파일생성 실패"+e);
+		           }//try end
+		           if(cnt1==0) { //수정 되었는지?
+				    	 System.out.println("사진 수정 실패");
+				      }else {
+				         System.out.println("사진 수정 되었습니다");
+				      }//if end
+		         }//for end
+			 }//if end
+		 }//if end
+		 int cnt=dao.update(dto);
+		 if(cnt==0) { //삭제되었는지?
+	    	 mav.addObject("msg","후기 수정 실패");
+		  	 mav.addObject("back","history.back()");
+		     System.out.println("수정 실패하였습니다.3");
+		 }else {
+			 mav.addObject("msg","수정되었습니다.");
+			 mav.addObject("url","../Treview/Treview.do");
+			 System.out.println("수정되었습니다.3");
+		 }//if end
+		 
+	   return mav;
+   }//updateproc()end
+ //------------------------------------------------------------------------------------------
+
+   @RequestMapping(value = "Treview/delcheckform.do", method = RequestMethod.GET)
+   public ModelAndView delcheckform(@ModelAttribute TreviewDTO dto
+									 ,HttpServletRequest req
+									 ,HttpServletResponse resp
+									 ,HttpSession session) {
+	   ModelAndView mav = new ModelAndView();
+	   
+	   mav.setViewName("Treview/delcheck");
+	   mav.addObject("root", Utility.getRoot());
+	   mav.addObject("dto", dao.read(dto.getRnum()));
+       return mav;
+      
+   }//upcheckform() end
+
+   @RequestMapping(value = "Treview/delcheck.do", method = {RequestMethod.POST, RequestMethod.GET})
+   public ModelAndView delcheck(TreviewDTO dto, Model model
+								  ,HttpServletRequest req
+								  ,HttpServletResponse resp
+								  ,HttpSession session) throws IOException{
+	   int rnum = Integer.parseInt(req.getParameter("rnum"));
+	   ModelAndView mav= new ModelAndView();
+	   
+	   String rpasswd=req.getParameter("rpasswd").trim(); 
+	   mav.addObject("root", Utility.getRoot());
+	   
+	   int cnt=0;
+	   dto.setRpasswd(rpasswd);
+	   cnt=dao.pwcheck(dto);
+	   req.setAttribute("rpasswd", rpasswd);
+	   System.out.println(rpasswd);
+	   System.out.println(cnt);
+	   
+	    if(cnt==0) {
+	    	resp.setContentType("text/html; charset=UTf-8;");
+	    	PrintWriter out = resp.getWriter();
+	    	out.println("<script> alert('비밀번호가 일치하지 않습니다');");
+	    	out.println("history.back(); </script>");
+	    	//out.println("location.href='../Treview/Treview.do'; </script>");
+	    	out.flush();
+	    }else {
+	    	mav.setViewName("Treview/delalert");
+	    	mav.addObject("root", Utility.getRoot());
+	        mav.addObject("dto",dto);
+	    }
+      return mav;
+      
+   }//upcheck() end
+   
+/*----------------------------------------------------------------------------------------   
+   @RequestMapping(value="Treview/delete.do", method = RequestMethod.GET)
+   public ModelAndView deleteForm(TreviewDTO dto) {
+      ModelAndView mav = new ModelAndView();
+     //mav.setViewName("Treview/Treviewdel");
+      mav.addObject("root", Utility.getRoot());
+      //삭제하고자 하는 행 가져오기
+      mav.addObject("dto", dao.read(dto.getRnum()));
+      return mav;
+   }//deleteForm() end
+*/
+//----------------------------------------------------------------------------------------   
+   @RequestMapping(value="Treview/delete.do", method = {RequestMethod.GET, RequestMethod.POST} )
+   public ModelAndView deleteProc(TreviewDTO dto, int rnum
+		   						, HttpServletRequest req, HttpServletResponse resp) throws IOException{
+	  rnum=Integer.parseInt(req.getParameter("rnum"));
+      ModelAndView mav = new ModelAndView();
+      mav.addObject("root", Utility.getRoot());
+      mav.addObject("dto", dao.read(dto.getRnum()));
+      mav.setViewName("Treview/msg");
+      
+      //삭제하고자 하는 정보 가져오기
+      TreviewDTO oldDTO=dao.read(rnum);
+      List<TreviewFileDTO> oldfDTO=dao.fread(rnum);
+      int cnt=dao.delete(rnum);
+      int cnt1=dao.fdelete(rnum);
+      //System.out.println(cnt1);
+      //System.out.println(oldfDTO.get(1));
+      
+      if(cnt==0||cnt1==0) { //삭제되었는지?
+    	  mav.addObject("msg","삭제 되었습니다.");
+    	  mav.addObject("url","../Treview/Treview.do");
+		  System.out.println("삭제성공");
+      }else {
+         //관련 파일 삭제
+         //String basePath=req.getRealPath("./storage");
+    	 String basePath=req.getSession().getServletContext().getRealPath("/resources/storage");
+         for(int i=0; i<=oldfDTO.size()-1; i++) {
+        	 UploadSaveManager.deleteFile(basePath, oldfDTO.get(i).getFileName());
+         }//for end
+         mav.addObject("msg","삭제 되었습니다.");
+         mav.addObject("url","../Treview/Treview.do");
+		 
+		 System.out.println("삭제실패");
+      }//if end
+      
+      return mav;
+      
+   }//deleteProc() end
+//--------------------------------------------------------------------------------------------------------------------------   
+   @RequestMapping("Treview/Treview2.do")
+      public ModelAndView list2(TreviewDTO dto
+                            , String col
+                            , String word,HttpServletRequest req) {
+         col=req.getParameter("col");
+         word=req.getParameter("word");
          
-        String[] fileNum = request.getParameterValues("fileNum");
-        TreviewFileUtil nf = new TreviewFileUtil();
-        nf.setConPath(request.getSession().getServletContext().getRealPath("/treviewUpload"));
-        List<TreviewFileDTO> filelist = nf.saveAllFiles(d.getUploadfile());
- 
-        dao.updateReview(treviewDTO, filelist, fileNum);
-         
-        rttr.addAttribute("page", cri.getPage());
-        rttr.addAttribute("perPageNum", cri.getPerPageNum());
-        rttr.addAttribute("searchType", cri.getSearchType());
-        rttr.addAttribute("keyword", cri.getKeyword());
-         
-        rttr.addFlashAttribute("updateMsg", "success");
-         
-        return "redirect:/Treview/read.do?rnum=" + rnum;
-    }// updatePOST()
-    
-  //-------------------------------------------------------------
-  */
-    // 삭제
-    @RequestMapping("/Treview/delete.do")
-    public String delete(@RequestParam("rnum") int rnum, SearchCriteria cri, RedirectAttributes rttr) {
-        dao.deleteReview(rnum);
-         
-        rttr.addAttribute("page", cri.getPage());
-        rttr.addAttribute("perPageNum", cri.getPerPageNum());
-        rttr.addAttribute("searchType", cri.getSearchType());
-        rttr.addAttribute("keyword", cri.getKeyword());
- 
-        return "redirect:/Treview/Treview.do";
-    }// deletePOST()
-    
-}//class end
+         ModelAndView mav = new ModelAndView();
+         mav.setViewName("Treview/Treviewlist");
+         mav.addObject("root", Utility.getRoot());
+         mav.addObject("list", dao.list2(col, word));
+         return mav;
+      }// list2() end
+
+//----------------------------------------------------------------------------------------   
+
+   
+}// class end
